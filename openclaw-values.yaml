@@ -1,0 +1,123 @@
+app-template:
+  configMode: merge
+  controllers:
+    main:
+      containers:
+        chromium:
+          enabled: false
+        main:
+          envFrom:
+            - secretRef:
+                name: openclaw-provider-secret
+            - secretRef:
+                name: openclaw-auth-secret
+      initContainers:
+        fix-permissions:
+          image:
+            repository: busybox
+            tag: "1.36"
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /home/node/.openclaw
+              chown -R 1000:1000 /home/node/.openclaw
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            runAsNonRoot: false
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+  configMaps:
+    config:
+      enabled: true
+      data:
+        openclaw.json: |
+          {
+            "gateway": {
+              "port": 18789,
+              "mode": "local",
+              "auth": {
+                "mode": "password"
+              },
+              "controlUi": {
+                "dangerouslyAllowHostHeaderOriginFallback": true
+              }
+            },
+            "browser": {
+              "enabled": false
+            },
+            "agents": {
+              "defaults": {
+                "workspace": "/home/node/.openclaw/workspace",
+                "model": {
+                  "primary": "github-copilot/claude-haiku-4.5"
+                },
+                "userTimezone": "UTC",
+                "timeoutSeconds": 600,
+                "maxConcurrent": 1
+              },
+              "list": [
+                {
+                  "id": "main",
+                  "default": true,
+                  "identity": {
+                    "name": "OpenClaw",
+                    "emoji": "🦞"
+                  }
+                }
+              ]
+            },
+            "session": {
+              "scope": "per-sender",
+              "store": "/home/node/.openclaw/sessions",
+              "reset": {
+                "mode": "idle",
+                "idleMinutes": 60
+              }
+            },
+            "logging": {
+              "level": "info",
+              "consoleLevel": "info",
+              "consoleStyle": "compact",
+              "redactSensitive": "tools"
+            },
+            "tools": {
+              "profile": "full",
+              "web": {
+                "search": {
+                  "enabled": false
+                },
+                "fetch": {
+                  "enabled": true
+                }
+              }
+            }
+          }
+  persistence:
+    data:
+      enabled: true
+      type: persistentVolumeClaim
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      advancedMounts:
+        main:
+          fix-permissions:
+            - path: /home/node/.openclaw
+          init-config:
+            - path: /home/node/.openclaw
+          init-skills:
+            - path: /home/node/.openclaw
+          main:
+            - path: /home/node/.openclaw
+    tmp:
+      enabled: true
+      type: emptyDir
