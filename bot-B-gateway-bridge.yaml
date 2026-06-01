@@ -1,0 +1,37 @@
+# bot-B-gateway-bridge.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discord-bridge-bot-b
+  namespace: openclaw
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discord-bridge-bot-b
+  template:
+    metadata:
+      labels:
+        app: discord-bridge-bot-b
+    spec:
+      containers:
+        - name: bridge
+          image: chamodide/discord-bridge:test-8
+          env:
+            - name: VALKEY_URL
+              value: "redis://valkey-primary.openclaw.svc.cluster.local:6379"
+            - name: AGENT_NAME
+              value: "bot-b"
+            - name: DISCORD_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-user-b
+                  key: DISCORD_BOT_TOKEN
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+

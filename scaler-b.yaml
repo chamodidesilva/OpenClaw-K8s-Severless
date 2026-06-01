@@ -1,0 +1,23 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-b-scaler
+  namespace: openclaw
+spec:
+  scaleTargetRef:
+    apiVersion: openclaw.rocks/v1alpha1
+    kind: OpenClawInstance
+    name: bot-b
+  pollingInterval: 5
+  cooldownPeriod: 300       # 5 min idle before suspending
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  triggers:
+    - type: redis
+      metadata:
+        address: valkey-primary.openclaw.svc.cluster.local:6379
+        listName: discord:queue:user:bot-b
+        listLength: "1"
+      authenticationRef:
+        name: keda-valkey-auth
+

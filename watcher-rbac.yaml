@@ -1,0 +1,31 @@
+# watcher-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: valkey-watcher
+  namespace: openclaw
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: valkey-watcher
+  namespace: openclaw
+rules:
+  - apiGroups: ["openclaw.rocks"]
+    resources: ["openclawinstances"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: valkey-watcher
+  namespace: openclaw
+subjects:
+  - kind: ServiceAccount
+    name: valkey-watcher
+    namespace: openclaw
+roleRef:
+  kind: Role
+  name: valkey-watcher
+  apiGroup: rbac.authorization.k8s.io
+
