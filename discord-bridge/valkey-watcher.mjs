@@ -74,6 +74,8 @@ setInterval(async () => {
 
     } else if (len > 0 && !suspended) {
       // already awake, reset idle timer if new messages arrive
+      await valkey.del(queueKey);
+      console.log(`Wake signal cleared for ${INSTANCE_NAME}, pod is running`);
       idleSince = null;
     }
 
@@ -81,4 +83,6 @@ setInterval(async () => {
     console.error('Poll error:', err);
   }
 }, 10000);
+
+
 

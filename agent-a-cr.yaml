@@ -5,17 +5,17 @@ metadata:
   namespace: openclaw
 spec:
   suspended: true        # start suspended, KEDA wakes it
-  sidecars:
-    - name: queue-drainer
-      image: chamodide/discord-bridge:test-8
-      command: ["node", "queue-drainer.mjs"]
-      env:
-        - name: VALKEY_URL
-          value: "redis://valkey-primary.openclaw.svc.cluster.local:6379"
-        - name: AGENT_NAME
-          value: "bot-a"
-        - name: OPENCLAW_URL
-          value: "http://localhost:18789"
+  # sidecars:
+  #   - name: queue-drainer
+  #     image: chamodide/discord-bridge:test-8
+  #     command: ["node", "queue-drainer.mjs"]
+  #     env:
+  #       - name: VALKEY_URL
+  #         value: "redis://valkey-primary.openclaw.svc.cluster.local:6379"
+  #       - name: AGENT_NAME
+  #         value: "bot-a"
+  #       - name: OPENCLAW_URL
+  #         value: "http://localhost:18789"
   envFrom:
     - secretRef:
         name: openclaw-api-keys
@@ -27,27 +27,21 @@ spec:
         defaults:
           model:           
             primary: "github-copilot/gpt-4o-mini"
-  # models:
-  #   mode: merge
-  #   providers:
-  #     github-copilot:
-  #       baseUrl: "https://models.inference.ai.azure.com"
-  #       apiKey: "${GITHUB_TOKEN}"
-  #       api: "openai-completions"
-  #       models:
-  #         - id: "claude-haiku-4.5"
-  #           contextWindow: 200000
-  #           maxTokens: 64000
-  #           cost:
-  #             input: 0
-  #             output: 0
-  #             cacheRead: 0
-  #             cacheWrite: 0
+      channels:
+        discord:
+          enabled: true
+          dmPolicy: "open"
+          # allowFrom:
+          #   - "*"
+          # applicationId: "1509204445215326341"
+          # token:
+          #   source: env
+          #   provider: default
+          #   id: DISCORD_BOT_TOKEN
   storage:
     persistence:
       enabled: true
       size: 5Gi
-      storageClass: manual
   # backup:
   #   secretName: openclaw-rclone-config
   #   bucket: "local:/backups/openclaw"

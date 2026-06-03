@@ -17,7 +17,7 @@ spec:
       serviceAccountName: valkey-watcher
       containers:
         - name: watcher
-          image: chamodide/discord-bridge:test-8
+          image: chamodide/discord-bridge:test-10
           command: ["node", "valkey-watcher.mjs"]
           env:
             - name: VALKEY_URL

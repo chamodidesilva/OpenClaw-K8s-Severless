@@ -1,8 +1,0 @@
-# keda-valkey-auth.yaml
-apiVersion: keda.sh/v1alpha1
-kind: TriggerAuthentication
-metadata:
-  name: keda-valkey-auth
-  namespace: openclaw
-spec: {}   # no auth for testing
-

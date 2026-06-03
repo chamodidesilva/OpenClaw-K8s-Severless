@@ -35,14 +35,14 @@ discord.on('messageCreate', async (message) => {
   const isDM = message.channel.type === 1;
   if (!isMention && !isDM) return;
 
-  const queueKey   = `discord:queue:user:${AGENT_NAME}`;
-  const dedupKey   = `discord:seen:${AGENT_NAME}:${message.id}`;
+  const queueKey = `discord:queue:user:${AGENT_NAME}`;
+  const dedupKey = `discord:seen:${AGENT_NAME}:${message.id}`;
 
   try {
-    // dedup — if we've already queued this message ID, skip
+    // dedup — skip if already signalled for this message
     const already = await valkey.set(dedupKey, '1', {
-      NX: true,   // only set if not exists
-      EX: 3600,   // expire after 1 hour
+      NX: true,
+      EX: 3600,
     });
 
     if (!already) {
@@ -50,19 +50,17 @@ discord.on('messageCreate', async (message) => {
       return;
     }
 
+    // push a lightweight wake signal — not the full payload
+    // lTrim keeps only 1 item so the list never grows beyond that
     await valkey.lPush(queueKey, JSON.stringify({
-      messageId:  message.id,
-      channelId:  message.channel.id,
-      guildId:    message.guildId,
-      content:    message.content,
-      author:     message.author.id,
-      authorTag:  message.author.tag,
-      timestamp:  message.createdTimestamp,
+      messageId: message.id,
+      timestamp: message.createdTimestamp,
     }));
+    await valkey.lTrim(queueKey, 0, 0);
 
-    console.log(`Queued message ${message.id} for ${AGENT_NAME} → ${queueKey}`);
+    console.log(`Wake signal pushed for ${AGENT_NAME} → ${queueKey}`);
   } catch (err) {
-    console.error('Failed to push to Valkey:', err);
+    console.error('Failed to push wake signal:', err);
   }
 });
 
