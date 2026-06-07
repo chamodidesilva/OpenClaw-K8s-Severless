@@ -1,0 +1,39 @@
+# ── ServiceAccount for the wake-proxy ────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: openclaw-wake-proxy
+  namespace: openclaw
+
+---
+# ── Role: read & patch OpenClawInstances, read pods ──────────────────────────
+# (ClusterRole because OpenClawInstance is a CRD, scoped per-namespace via RoleBinding)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: openclaw-wake-proxy
+  namespace: openclaw
+rules:
+  # Read and patch OpenClawInstance CRs
+  - apiGroups: ["openclaw.rocks"]
+    resources: ["openclawinstances"]
+    verbs: ["get", "list", "patch"]
+  # Read pods to check readiness
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: openclaw-wake-proxy
+  namespace: openclaw
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openclaw-wake-proxy
+subjects:
+  - kind: ServiceAccount
+    name: openclaw-wake-proxy
+    namespace: openclaw

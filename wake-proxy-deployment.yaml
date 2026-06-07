@@ -1,0 +1,93 @@
+# Wake-Proxy Deployment for a single user's OpenClaw agent.
+#
+# Deploy one of these per user. The proxy:
+#   - Receives curl requests on port 8080 (same API as OpenClaw's /v1/responses etc.)
+#   - Wakes the agent's OpenClawInstance if suspended
+#   - Proxies the request through to the OpenClaw pod
+#   - Re-suspends after IDLE_TIMEOUT_MS of no activity
+#
+# Template: replace <USER_ID> with the actual user/agent identifier.
+# The INSTANCE_NAME must match the OpenClawInstance CR name for this user.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wake-proxy-<USER_ID>
+  namespace: openclaw
+  labels:
+    app: openclaw-wake-proxy
+    user: <USER_ID>
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openclaw-wake-proxy
+      user: <USER_ID>
+  template:
+    metadata:
+      labels:
+        app: openclaw-wake-proxy
+        user: <USER_ID>
+    spec:
+      serviceAccountName: openclaw-wake-proxy
+      containers:
+        - name: proxy
+          image: openclaw-wake-proxy:latest   # built from Dockerfile in this repo
+          imagePullPolicy: IfNotPresent       # for local minikube builds
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INSTANCE_NAME
+              value: "<USER_ID>"              # must match OpenClawInstance CR name
+            - name: NAMESPACE
+              value: "openclaw"
+            - name: IDLE_TIMEOUT_MS
+              value: "900000"                 # 15 minutes
+            - name: WAKE_TIMEOUT_MS
+              value: "120000"                 # 2 minute wake timeout
+            - name: WAKE_POLL_MS
+              value: "2000"                   # poll readiness every 2s
+            - name: PORT
+              value: "8080"
+            - name: OPENCLAW_PORT
+              value: "18789"
+            - name: LOG_LEVEL
+              value: "info"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+---
+# Service to expose the wake-proxy inside the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: wake-proxy-<USER_ID>
+  namespace: openclaw
+  labels:
+    app: openclaw-wake-proxy
+    user: <USER_ID>
+spec:
+  selector:
+    app: openclaw-wake-proxy
+    user: <USER_ID>
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

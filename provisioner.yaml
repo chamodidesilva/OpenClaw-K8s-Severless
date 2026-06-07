@@ -1,0 +1,98 @@
+# ── ServiceAccount for the provisioner ───────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: openclaw-provisioner
+  namespace: openclaw
+
+---
+# Role: create OpenClawInstances, Deployments, Services; read Secrets (for tokens)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: openclaw-provisioner
+  namespace: openclaw
+rules:
+  - apiGroups: ["openclaw.rocks"]
+    resources: ["openclawinstances"]
+    verbs: ["get", "list", "create", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "create", "patch"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "create", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]   # only read — to retrieve gateway tokens created by the operator
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: openclaw-provisioner
+  namespace: openclaw
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openclaw-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: openclaw-provisioner
+    namespace: openclaw
+
+---
+# ── Provisioner Deployment ────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw-provisioner
+  namespace: openclaw
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openclaw-provisioner
+  template:
+    metadata:
+      labels:
+        app: openclaw-provisioner
+    spec:
+      serviceAccountName: openclaw-provisioner
+      containers:
+        - name: provisioner
+          image: openclaw-wake-proxy:latest  # same image, different entrypoint
+          imagePullPolicy: IfNotPresent
+          command: ["node", "src/provisioner.mjs"]
+          ports:
+            - containerPort: 9000
+          env:
+            - name: NAMESPACE
+              value: "openclaw"
+            - name: PORT
+              value: "9000"
+            - name: PROXY_IMAGE
+              value: "openclaw-wake-proxy:latest"
+            - name: IDLE_TIMEOUT_MS
+              value: "900000"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openclaw-provisioner
+  namespace: openclaw
+spec:
+  selector:
+    app: openclaw-provisioner
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 9000
