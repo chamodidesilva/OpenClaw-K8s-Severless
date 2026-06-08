@@ -47,6 +47,8 @@ wait_for_service() {
 
 minikube start --driver=docker
 
+minikube ssh -- docker pull ghcr.io/openclaw/openclaw:2026.6.1
+
 helm install openclaw-operator \
   oci://ghcr.io/paperclipinc/charts/openclaw-operator \
   --namespace openclaw-operator-system \

@@ -136,7 +136,7 @@ function buildProxyDeployment(userId) {
               { name: 'INSTANCE_NAME',   value: userId },
               { name: 'NAMESPACE',       value: NAMESPACE },
               { name: 'IDLE_TIMEOUT_MS', value: IDLE_TIMEOUT_MS },
-              { name: 'WAKE_TIMEOUT_MS', value: '120000' },
+              { name: 'WAKE_TIMEOUT_MS', value: '300000' },
               { name: 'WAKE_POLL_MS',    value: '2000' },
               { name: 'PORT',            value: '8080' },
               { name: 'OPENCLAW_PORT',   value: '18789' },

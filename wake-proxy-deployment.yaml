@@ -44,7 +44,7 @@ spec:
             - name: IDLE_TIMEOUT_MS
               value: "900000"                 # 5 minutes
             - name: WAKE_TIMEOUT_MS
-              value: "120000"                 # 2 minute wake timeout
+              value: "300000"                 # 5 minute wake timeout
             - name: WAKE_POLL_MS
               value: "2000"                   # poll readiness every 2s
             - name: PORT
