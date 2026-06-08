@@ -79,6 +79,7 @@ function buildOpenClawInstance(userId) {
     },
     spec: {
       suspended: true,
+      image: { repository: 'ghcr.io/openclaw/openclaw', tag: '2026.6.1', pullPolicy: 'IfNotPresent' },
       envFrom: [{ secretRef: { name: 'openclaw-api-keys' } }],
       workspace: { bootstrap: { enabled: false } },
       config: {
