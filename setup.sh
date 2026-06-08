@@ -45,6 +45,8 @@ wait_for_service() {
 
 # ── One-time setup (comment out after first run) ──────────────────────────────
 
+minikube start --driver=docker
+
 helm install openclaw-operator \
   oci://ghcr.io/paperclipinc/charts/openclaw-operator \
   --namespace openclaw-operator-system \
