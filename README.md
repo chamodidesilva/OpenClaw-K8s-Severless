@@ -1,7 +1,7 @@
 # OpenClaw Wake-Proxy Gateway
 
 Serverless-style OpenClaw on Kubernetes.  
-Each user gets their own `OpenClawInstance` that suspends when idle and wakes automatically when they send a message.
+Each user gets their own `OpenClawInstance` that suspends when idle (for 15 seconds) and wakes automatically when they send a message.
 
 ## Architecture
 

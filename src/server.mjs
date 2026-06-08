@@ -27,7 +27,7 @@ import { readFileSync } from 'fs';
 
 const NAMESPACE        = process.env.NAMESPACE         || 'openclaw';
 const INSTANCE_NAME    = process.env.INSTANCE_NAME;          // required
-const IDLE_TIMEOUT_MS  = parseInt(process.env.IDLE_TIMEOUT_MS  || '900000');
+const IDLE_TIMEOUT_MS  = parseInt(process.env.IDLE_TIMEOUT_MS  || '15000');
 const WAKE_POLL_MS     = parseInt(process.env.WAKE_POLL_MS     || '2000');
 const WAKE_TIMEOUT_MS  = parseInt(process.env.WAKE_TIMEOUT_MS  || '120000');
 const PORT             = parseInt(process.env.PORT             || '8080');

@@ -27,7 +27,7 @@ import { readFileSync } from 'fs';
 const NAMESPACE      = process.env.NAMESPACE       || 'openclaw';
 const PORT           = parseInt(process.env.PORT   || '9000');
 const PROXY_IMAGE    = process.env.PROXY_IMAGE     || 'openclaw-wake-proxy:latest';
-const IDLE_TIMEOUT_MS = process.env.IDLE_TIMEOUT_MS || '900000';
+const IDLE_TIMEOUT_MS = process.env.IDLE_TIMEOUT_MS || '15000';
 
 // ── K8s client ────────────────────────────────────────────────────────────────
 
