@@ -42,7 +42,7 @@ spec:
             - name: NAMESPACE
               value: "openclaw"
             - name: IDLE_TIMEOUT_MS
-              value: "300000"                 # 5 minutes
+              value: "900000"                 # 5 minutes
             - name: WAKE_TIMEOUT_MS
               value: "120000"                 # 2 minute wake timeout
             - name: WAKE_POLL_MS
